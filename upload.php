@@ -8,6 +8,22 @@
 <p>here you can see all tasks</p>
 <?php
 
+try {
+    $db = new PDO("mysql:host=localhost;dbname=beejee", "beejee", "12345678");
+    $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $db->exec("set names utf8");
+}
+catch(PDOException $e) {
+    echo $e->getMessage();
+}
+$stmt=$db->prepare("INSERT INTO `tasks` (`ext`, `username`, `email`, `description`) VALUES (?, ?, ?, ?);");
+$result=$stmt->execute(['111',$_POST['username'],$_POST['email'],$_POST['description']]);
+var_dump($db->lastInsertId());
+
+$stmt = $db->query('SELECT * from tasks');
+$rows = $stmt->fetchAll();
+require ('view/tasks.php');
+
 class SimpleImage
 {
 
@@ -93,40 +109,21 @@ class SimpleImage
 
 $params = (getimagesize($_FILES['userfile']['tmp_name']));
 echo $params[0], ':', $params[1];
-
 $mime = $_FILES['userfile']['type'];
 $type = explode("/", $mime)[1];
 echo "img type $type<br>";
 $image = new SimpleImage();
 $image->load($_FILES['userfile']['tmp_name']);
-
-if ($params[1] / $params[0] > 0.75) {
-    $image->resizeToWidth(240);
-} else {
+if ($params[1] / $params[0] < 0.75) {
     $image->resizeToWidth(320);
+} else {
+    $image->resizeToHeight(240);
 }
-
 $image->save('image1.' . $type);
 
-
 echo $_FILES['userfile']['tmp_name'], $_FILES['userfile']['name'];
-
-
 $target_dir = "uploads/";
-$target_file = $target_dir . basename($_FILES["fileToUpload"]["name"]);
-$uploadOk = 1;
 
-// Check if image file is a actual image or fake image
-if (isset($_POST["submit"])) {
-    $check = getimagesize($_FILES["fileToUpload"]["tmp_name"]);
-    if ($check !== false) {
-        echo "File is an image - " . $check["mime"] . ".";
-        $uploadOk = 1;
-    } else {
-        echo "File is not an image.";
-        $uploadOk = 0;
-    }
-}
 ?>
 </body>
 </html>
